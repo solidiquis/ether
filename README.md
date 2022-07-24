@@ -19,3 +19,9 @@ OPTIONS:
     -i             Path to file containing text to encrypt or decrypt.
     -p             Path to file containing cryptographic key.
 ```
+
+## Installation
+
+1. Make sure you have [Rust and its toolchain](https://www.rust-lang.org/tools/install) installed.
+2. `$ cargo install --git https://github.com/solidiquis/tcrypt`
+3. The executable should then be located in `$HOME/.cargo/bin/`.
