@@ -51,11 +51,11 @@ impl TCryptArgs {
 
         let clargs = env::args().collect::<Vec<String>>();
 
+        if clargs.len() == 1 { return None }
+
         tcrypt_args.mode = Self::parse_mode(&clargs[1]);
 
         let opts = &clargs[2..];
-
-        if opts.len() == 0 { return None }
 
         for chunk in opts.chunks(2) {
             let arg = &chunk[0];
