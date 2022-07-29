@@ -1,27 +1,29 @@
-# TCrypt
+# Ether
 
 ```
 USAGE:
-    tcrypt [mode] [options]
+    ether ARGUMENT OPTIONS
 
 DESCRIPTION:
-    Symmetric-key encryption and decryption utility.
+    Symmetric-key encryption and decryption utility built on Blowfish.
 
 EXAMPLE:
-    tcrypt enc -t "Text to encrypt." -k foobar
+    ether enc -i "Text to encrypt." -k foobar
 
-ARGUMENTS:
-    mode [enc|dec] Specify whether to encrypt or decrypt given text and key.
+ARGUMENT:
+    enc | dec      Specify whether to encrypt or decrypt given text and key.
 
 OPTIONS:
-    -t             Input text to encrypt or decrypt.
-    -k             Cryptographic key. Valid lengths: [4, 56] exclusive.
-    -i             Path to file containing text to encrypt or decrypt.
-    -p             Path to file containing cryptographic key.
+    -i             Input text to encrypt or decrypt.
+    -I             Path to file containing text to encrypt or decrypt.
+    -k             Cryptographic key to encrypt or decrypt text. Valid lengths: [4, 56] exclusive.
+    -K             Path to file containing cryptographic key. Valid lengths: [4, 56] exclusive.
+
+
 ```
 
 ## Installation
 
 1. Make sure you have [Rust and its toolchain](https://www.rust-lang.org/tools/install) installed.
-2. `$ cargo install --git https://github.com/solidiquis/tcrypt`
+2. `$ cargo install --git https://github.com/solidiquis/ether`
 3. The executable should then be located in `$HOME/.cargo/bin/`.
