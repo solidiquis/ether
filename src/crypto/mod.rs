@@ -43,7 +43,7 @@ pub fn decipher(cipher_text: &str, key: &str) -> CryptoResult {
 
     if let Err(e) = validate_key(keyb) { return Err(e) }
 
-    let encrypted_bytes = util::to_byte_vec(cipher_text);
+    let encrypted_bytes = util::to_byte_vec(cipher_text)?;
 
     let bf = init_blowfish(keyb);
 

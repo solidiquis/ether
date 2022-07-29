@@ -1,3 +1,5 @@
+use super::error::Error;
+
 pub(super) fn as_padded_bytes(plain_text: &str) -> Vec<u8> {
     let mut plain_textb = plain_text.as_bytes().to_owned();
 
@@ -17,7 +19,7 @@ pub(super) fn to_hex_string(bytes: &[u8]) -> String {
         .join("")
 }
 
-pub(super) fn to_byte_vec(hex_string: &str) -> Vec<u8> {
+pub(super) fn to_byte_vec(hex_string: &str) -> Result<Vec<u8>, Error> {
     let mut bytes: Vec<u8> = vec![];
 
     for chunk in hex_string.as_bytes().chunks(2) {
@@ -26,10 +28,11 @@ pub(super) fn to_byte_vec(hex_string: &str) -> Vec<u8> {
             .collect::<Vec<String>>()
             .join("");
 
-        let byte = u8::from_str_radix(&hex, 16).unwrap();
+        let byte = u8::from_str_radix(&hex, 16)
+            .map_err(|_e| Error::InvalidTextKeyPair)?;
 
         bytes.push(byte);
     }
 
-    bytes
+    Ok(bytes)
 }

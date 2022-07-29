@@ -1,39 +1,43 @@
-use std::{env, path::PathBuf};
+pub mod error;
+
+use std::path::PathBuf;
 
 pub const HELP: &'static str = r#"
 USAGE:
-    tcrypt [mode] [options]
+    ether ARGUMENT OPTIONS
 
 DESCRIPTION:
-    Symmetric-key encryption and decryption utility.
+    Symmetric-key encryption and decryption utility built on Blowfish.
 
 EXAMPLE:
-    tcrypt enc -t "Text to encrypt." -k foobar
+    ether enc -i "Text to encrypt." -k foobar
 
-ARGUMENTS:
-    mode [enc|dec] Specify whether to encrypt or decrypt given text and key.
+ARGUMENT:
+    enc | dec      Specify whether to encrypt or decrypt given text and key.
 
 OPTIONS:
-    -t             Input text to encrypt or decrypt.
-    -k             Cryptographic key. Valid lengths: [4, 56] exclusive.
-    -i             Path to file containing text to encrypt or decrypt.
-    -p             Path to file containing cryptographic key.
+    -i             Input text to encrypt or decrypt.
+    -I             Path to file containing text to encrypt or decrypt.
+    -k             Cryptographic key to encrypt or decrypt text. Valid lengths: [4, 56] exclusive.
+    -K             Path to file containing cryptographic key. Valid lengths: [4, 56] exclusive.
 "#;
 
-pub struct TCryptArgs {
+pub struct EtherArgs {
     pub mode: Option<Mode>,
     pub text: Option<String>,
     pub key: Option<String>,
     pub path_to_text: Option<PathBuf>,
     pub path_to_key: Option<PathBuf>,
+    pub help: bool
 }
 
+#[derive(Debug)]
 pub enum Mode {
     Encipher,
     Decipher
 }
 
-impl Default for TCryptArgs {
+impl Default for EtherArgs {
     fn default() -> Self {
         Self {
             mode: None,
@@ -41,40 +45,48 @@ impl Default for TCryptArgs {
             key: None,
             path_to_text: None,
             path_to_key: None,
+            help: false,
         }
     } 
 }
 
-impl TCryptArgs {
-    pub fn init() -> Option<Self> {
-        let mut tcrypt_args = Self::default();
+impl EtherArgs {
+    pub fn init(clargs: Vec<String>) -> Result<Self, error::Error> {
+        let mut ether_args = Self::default();
 
-        let clargs = env::args().collect::<Vec<String>>();
+        if clargs.len() == 1 { return Err(error::Error::UsageError) }
 
-        if clargs.len() == 1 { return None }
+        if clargs.contains(&"-h".to_string()) {
+            ether_args.help = true;
+            return Ok(ether_args)
+        }
 
-        tcrypt_args.mode = Self::parse_mode(&clargs[1]);
+        let mode_arg = clargs.get(1).ok_or(error::Error::UsageError)?;
+
+        if let Some(mode) = Self::parse_mode(&mode_arg) {
+            ether_args.mode = Some(mode);
+        } else {
+            return Err(error::Error::ArgumentError);
+        }
 
         let opts = &clargs[2..];
 
         for chunk in opts.chunks(2) {
-            let arg = &chunk[0];
-            let value = &chunk[1];
+            let arg = chunk.get(0).ok_or(error::Error::UsageError)?;
+            let value = chunk.get(1).ok_or(error::Error::UsageError)?;
 
-            if arg == "-t" {
-                tcrypt_args.text = Some(value.to_owned());
+            if arg == "-i" {
+                ether_args.text = Some(value.to_owned());
             } else if arg == "-k" {
-                tcrypt_args.key = Some(value.to_owned());
-            } else if arg == "-i" {
-                tcrypt_args.path_to_text = Some(PathBuf::from(value))
-            } else if arg == "-p" {
-                tcrypt_args.path_to_key = Some(PathBuf::from(value))
-            } else if arg == "-h" {
-                return None
+                ether_args.key = Some(value.to_owned());
+            } else if arg == "-I" {
+                ether_args.path_to_text = Some(PathBuf::from(value))
+            } else if arg == "-K" {
+                ether_args.path_to_key = Some(PathBuf::from(value))
             }
         }
 
-        Some(tcrypt_args)
+        Ok(ether_args)
     }
 
     fn parse_mode(value: &str) -> Option<Mode> {

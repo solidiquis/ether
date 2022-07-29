@@ -39,6 +39,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "ether"
+version = "0.1.0"
+dependencies = [
+ "blowfish",
+ "generic-array",
+]
+
+[[package]]
 name = "generic-array"
 version = "0.14.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -54,14 +62,6 @@ version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a0c10553d664a4d0bcff9f4215d0aac67a639cc68ef660840afe309b807bc9f5"
 dependencies = [
- "generic-array",
-]
-
-[[package]]
-name = "tcrypt"
-version = "0.1.0"
-dependencies = [
- "blowfish",
  "generic-array",
 ]
 

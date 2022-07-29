@@ -1,54 +1,59 @@
-use std::fs;
+use std::env;
+use std::process::ExitCode;
 
 mod cli;
 mod crypto;
 
-fn main() -> Result<(), crypto::error::Error> {
-    use cli::TCryptArgs;
-    use cli::Mode;
+#[cfg(test)]
+mod test;
 
-    let args = match TCryptArgs::init() {
-        Some(a) => a,
-        None => {
-            println!("{}", cli::HELP);
-            return Ok(())
-        }
-    };
+fn run(clargs: Vec<String>) -> Result<(), Box<dyn std::error::Error>> {
+    use std::fs;
+    use cli::{Mode, EtherArgs, error::Error as CLError};
 
-    let TCryptArgs {
+    let EtherArgs {
         text,
         key,
         mode,
         path_to_key,
-        path_to_text
-    } = args;
+        path_to_text,
+        help
+    } = EtherArgs::init(clargs)?;
 
-    let crypto_mode = mode.expect("Missing argument `[enc|dec]`.");
+    if help {
+        println!("{}", cli::HELP);
+        return Ok(())
+    }
 
-    let crypto_key = key.or_else(|| {
-        let key = path_to_key
-            .map(|path| fs::read(path).expect("Failed to read key provided by path, `-p`."))
-            .map(|bytes| String::from_utf8(bytes).expect("Failed to parse key file provided by `-p`."))
-            .expect("Key `-k` or path to key `-p` required.");
+    let crypto_mode = mode.ok_or(CLError::ArgumentError)?;
 
-        Some(key)
-    }).expect("Failed to parse key.");
+    let read_to_string = |path| fs::read_to_string(path).ok();
 
-    let crypto_text = text.or_else(|| {
-        let text = path_to_text
-            .map(|path| fs::read(path).expect("Failed to read text provided by path, `-i`."))
-            .map(|bytes| String::from_utf8(bytes).expect("Failed to parse text file provided by `-i`."))
-            .expect("Text `-t` or path to text `-i` required.");
+    let crypto_key = key
+        .or_else(|| path_to_key.and_then(read_to_string))
+        .ok_or(CLError::MissingKeyError)?;
 
-        Some(text)
-    }).expect("Failed to parse text.");
+    let crypto_text = text
+        .or_else(|| path_to_text.and_then(read_to_string))
+        .ok_or(CLError::MissingInputError)?;
 
     let result = match crypto_mode {
-        Mode::Decipher => crypto::decipher(&crypto_text, &crypto_key),
-        Mode::Encipher => crypto::encipher(&crypto_text, &crypto_key)
+        Mode::Decipher => crypto::decipher(crypto_text.trim_end(), crypto_key.trim_end()),
+        Mode::Encipher => crypto::encipher(crypto_text.trim_end(), crypto_key.trim_end())
     }?;
 
     println!("{}", result);
 
     Ok(())
+}
+
+fn main() -> ExitCode {
+    let clargs = env::args().collect::<Vec<String>>();
+
+    if let Err(e) = run(clargs) {
+        eprintln!("{}", e.to_string());
+        ExitCode::FAILURE
+    } else {
+        ExitCode::SUCCESS
+    }
 }
