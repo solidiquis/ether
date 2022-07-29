@@ -18,8 +18,6 @@ OPTIONS:
     -I             Path to file containing text to encrypt or decrypt.
     -k             Cryptographic key to encrypt or decrypt text. Valid lengths: [4, 56] exclusive.
     -K             Path to file containing cryptographic key. Valid lengths: [4, 56] exclusive.
-
-
 ```
 
 ## Installation
